@@ -1,13 +1,16 @@
 from langchain_community.document_loaders import WebBaseLoader
 
-url = "https://www.ibm.com/think/insights/artificial-intelligence-future"
-loader = WebBaseLoader(url)
-url_docs = loader.load()
+urls = []
+while True:
+    url = input("Give the URL (or type 'no' to stop): ")
+    if url.lower() == "no":
+        break
+    urls.append(url)
 
-print("Documents loaded:", len(url_docs))
-
-print("\nCONTENT:")
-print(url_docs[0].page_content[:500])
-
-print("\nMETADATA:")
-print(url_docs[0].metadata)
+all_documents = []
+for link in urls:
+    loader = WebBaseLoader(link)
+    url_docs = loader.load()
+    for doc in url_docs:
+        doc.metadata['source_url']= link
+    all_documents.extend(url_docs)
