@@ -1,4 +1,5 @@
 from langchain_community.document_loaders import WebBaseLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 urls = []
 while True:
@@ -21,6 +22,7 @@ for link in urls:
             doc.metadata["source_url"] = link
         all_documents.extend(url_docs)
         print(f"Loaded: {len(url_docs)} document(s)")
+
     except Exception as e:
         print(f"Could not load {link}")
         print(f"Error: {e}")
