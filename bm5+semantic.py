@@ -81,11 +81,29 @@ while True:
     respone= llm.invoke(messages)
     print(respone.content)
 '''
-query = input("BM25 query: ")
+query = input("Hybrid query: ")
 
-results = bm25.invoke(query)
+dense_results = vectorstore.similarity_search(
+    query,
+    k=5
+)
 
-for i, doc in enumerate(results[:3], start=1):
-    print(f"\n--- BM25 RESULT {i} ---")
-    print(doc.metadata.get("source_url"))
+bm25_results = bm25.invoke(query)
+
+combined = []
+seen = set()
+
+for doc in dense_results + bm25_results:
+    key = doc.page_content
+    if key not in seen:
+        seen.add(key)
+        combined.append(doc)
+
+for i, doc in enumerate(combined[:5], start=1):
+    print(f"\n--- HYBRID RESULT {i} ---")
+    print("SOURCE:", doc.metadata.get("source_url"))
     print(doc.page_content[:500])
+
+
+
+
