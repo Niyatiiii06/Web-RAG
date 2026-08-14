@@ -1,5 +1,12 @@
-from langchain_community.document_loaders import WebBaseLoader
+import os
+from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
+from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_mistralai import MistralAIEmbeddings
+from langchain_mistralai import ChatMistralAI
+from dotenv import load_dotenv
+load_dotenv()
 
 urls = []
 while True:
@@ -27,8 +34,20 @@ for link in urls:
         print(f"Could not load {link}")
         print(f"Error: {e}")
 
-print("\nTOTAL URLs:", len(urls))
-print("TOTAL DOCUMENTS:", len(all_documents))
+splitter= RecursiveCharacterTextSplitter(
+    chunk_size= 1000,
+    chunk_overlap= 200
+)
+chunks= splitter.split_documents(all_documents)
+
+emb= MistralAIEmbeddings(model ='model="mistral-embed"')
+
+vectorstore= Chroma.from_documents(
+    documents= chunks,
+    embedding= emb,
+    persist_directory= 'chroma_db'
+)
+
 
 for i, doc in enumerate(all_documents, start=1):
     print(f"\n--- DOCUMENT {i} ---")
