@@ -128,16 +128,39 @@ hybrid_results = rrf_fusion(
 )
 
 
-# 9. DISPLAY RESULTS
-for i, doc in enumerate(hybrid_results[:5], start=1):
-    print(f"\n--- HYBRID RESULT {i} ---")
-    print(
-        "SOURCE:",
-        doc.metadata.get("source_url", "Unknown")
-    )
-    print(
-        doc.page_content[:500]
-    )
+# RERANK
+from sentence_transformers import CrossEncoder
+
+reranker = CrossEncoder(
+    "cross-encoder/ms-marco-MiniLM-L-6-v2"
+)
+
+pairs = [
+    (query, doc.page_content)
+    for doc in hybrid_results
+]
+
+scores = reranker.predict(pairs)
+
+ranked_results = list(
+    zip(hybrid_results, scores)
+)
+
+ranked_results.sort(
+    key=lambda x: x[1],
+    reverse=True
+)
+
+
+# DISPLAY RERANKED RESULTS
+for i, (doc, score) in enumerate(
+    ranked_results[:5],
+    start=1
+):
+    print(f"\n--- RERANKED RESULT {i} ---")
+    print("SCORE:", score)
+    print("SOURCE:", doc.metadata.get("source_url"))
+    print(doc.page_content[:500])
 
 context_parts = []
 
